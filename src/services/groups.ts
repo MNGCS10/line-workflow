@@ -70,6 +70,11 @@ export async function updateGroup(groupId: string, patch: {
   )
 }
 
+/** ลบกลุ่มออกจากทะเบียน (ไม่ลบข้อความ/ไฟล์ที่เคยเก็บไว้ ลบเฉพาะการ์ดกลุ่มนี้) */
+export async function deleteGroup(groupId: string): Promise<void> {
+  await query('DELETE FROM line_groups WHERE group_id = $1', [groupId])
+}
+
 /** กลุ่มที่ควรเลือกเป็นค่าเริ่มต้นใน dropdown */
 export async function defaultGroupId(): Promise<string | null> {
   const row = await queryOne<{ group_id: string }>(

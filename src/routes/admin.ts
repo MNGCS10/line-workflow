@@ -4,7 +4,7 @@ import { config, reportScheduleNote } from '../config'
 import { getQuota } from '../line/client'
 import { setFlash, takeFlash } from '../middleware/auth'
 import { flexAnnouncement, flexDailySummary, flexExecutiveReport, flexTaskReminder } from '../services/flex'
-import { defaultGroupId, listGroups, updateGroup, upsertGroup } from '../services/groups'
+import { defaultGroupId, deleteGroup, listGroups, updateGroup, upsertGroup } from '../services/groups'
 import {
   fetchMessagesForExport,
   messagesOfDay,
@@ -161,6 +161,13 @@ export function createAdminRouter(): Router {
       await upsertGroup(groupId, { groupName: groupName ?? null })
       setFlash(req, 'success', `เพิ่มกลุ่ม ${groupId} แล้ว`)
     }
+    res.redirect('/groups')
+  })
+
+  // ลบกลุ่มออกจากทะเบียน (ไม่ลบข้อความ/ไฟล์เดิม แค่เอาการ์ดกลุ่มออกจากหน้านี้)
+  router.post('/groups/:groupId/delete', async (req: Request, res: Response) => {
+    await deleteGroup(req.params.groupId)
+    setFlash(req, 'success', 'ลบกลุ่มออกจากทะเบียนแล้ว')
     res.redirect('/groups')
   })
 

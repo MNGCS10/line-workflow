@@ -47,6 +47,10 @@
         <span class="badge <%= g.consent_at ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' %>">
           <%= g.consent_at ? 'ยืนยันความยินยอมแล้ว' : 'ยังไม่ยืนยันความยินยอม' %>
         </span>
+        <form method="post" action="/groups/<%= g.group_id %>/delete"
+              onsubmit="return confirm('ลบกลุ่ม \'<%= (g.group_name || g.group_id).replace(/'/g, '') %>\' ออกจากทะเบียน?\n(ข้อความ/ไฟล์เดิมจะไม่ถูกลบ)')">
+          <button class="btn btn-danger text-xs">ลบ</button>
+        </form>
       </div>
     </div>
 
