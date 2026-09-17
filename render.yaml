@@ -49,7 +49,7 @@ services:
       # ไฟล์ที่เขียนลงดิสก์จะหายทุกครั้งที่ deploy ใหม่
       # ถ้าไม่เก็บไฟล์เลย ตั้ง MEDIA_ARCHIVE_ENABLED เป็น "false" แล้วข้าม S3_* ทั้งหมด
       - key: MEDIA_ARCHIVE_ENABLED
-        value: "true"
+        value: "false"
       - key: MEDIA_STORAGE_DRIVER
         value: s3
       - key: MEDIA_MAX_SIZE_MB
