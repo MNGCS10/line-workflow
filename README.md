@@ -1,49 +1,133 @@
-# LINE Workflow Automation
+# LINE Workflow Automation - Webhook Server + Admin Dashboard
 
-ระบบอัตโนมัติสำหรับกลุ่ม LINE ขององค์กร: บันทึกแชทกลุ่ม, สรุปงานประจำวันด้วย AI, แจ้งเตือนรายการยอดขายผิดปกติ, เก็บไฟล์แนบถาวร และมี Admin Dashboard ให้จัดการทุกอย่าง
+โปรเจกต์ที่รันได้จริงจากหลักสูตร **LINE Workflow Automation with Claude Code & MCP**
+ระบบเต็ม: บันทึกแชทกลุ่ม, สรุปงานและออกรายงานด้วย AI, แจ้งเตือนยอดขายผิดปกติ, เก็บไฟล์แนบถาวร และ Admin Dashboard
 
-## ความสามารถหลัก
+---
 
-- **Webhook Recorder** — รับข้อความจากกลุ่ม LINE ผ่าน Messaging API แล้วบันทึกลง PostgreSQL
-- **AI Daily Summary / Report** — สรุปบทสนทนาประจำวันและออกรายงานผู้บริหารด้วย Anthropic Claude (ถ้าไม่ใส่ API key จะใช้ตัวสรุปแบบ rule-based แทน)
-- **Anomaly Alert** — แจ้งเตือนอัตโนมัติเมื่อพบรายการยอดขายที่ผิดปกติเกินเกณฑ์ที่ตั้งไว้
-- **Media Archiver** — ดาวน์โหลดไฟล์แนบจากไลน์กลุ่มเก็บถาวร รองรับทั้งดิสก์ในเครื่องและ Object Storage (Cloudflare R2 / AWS S3 / MinIO)
-- **Admin Dashboard** — ล็อกอิน, ดูแดชบอร์ด, จัดการกลุ่ม/สินค้า/สรุปงาน/งาน/สื่อ/ล็อก, ส่งข้อความเข้ากลุ่ม
-- **Scheduler ในตัว** — ตั้งเวลาสรุปงานและออกรายงานด้วย cron โดยไม่ต้องพึ่ง Task Scheduler ภายนอก (เมื่อ deploy บน cloud ที่รันค้างตลอด)
-
-## เริ่มใช้งาน
+## เริ่มใช้งานใน 4 คำสั่ง
 
 ```bash
 npm install
-copy .env.example .env    # mac/Linux ใช้ cp .env.example .env
-npm run db:setup          # สร้างตารางและข้อมูลตัวอย่างใน PostgreSQL
+cp .env.example .env          # Windows: copy .env.example .env
+npm run db:setup              # สร้างตาราง + ใส่ข้อมูลจำลอง
 npm run dev
 ```
 
-เปิด http://localhost:3000/ และ http://localhost:3000/admin สำหรับ Dashboard
+เปิด http://localhost:3000 ล็อกอิน `admin` / `admin1234`
 
-ค่าที่ต้องตั้งใน `.env` อย่างน้อย: `DATABASE_URL`, `CHANNEL_ACCESS_TOKEN`, `CHANNEL_SECRET` (จาก LINE Developers Console) — ดูรายละเอียดค่าทั้งหมดใน `.env.example`
+ยังไม่ต้องมี LINE Official Account เพราะค่าเริ่มต้นคือ `MOCK_LINE=true`
+ระบบจะทำงานครบทุกหน้า แต่ไม่ยิง LINE API จริง
 
-## คำสั่งที่มี
+---
+
+## คำสั่งทั้งหมด
 
 | คำสั่ง | ทำอะไร |
 | --- | --- |
-| `npm run dev` | รันแบบ watch (รีสตาร์ทเองเมื่อแก้ไฟล์) |
-| `npm run build` | คอมไพล์ TypeScript ไปที่ `dist/` |
-| `npm start` | รันไฟล์ที่ build แล้ว |
-| `npm run typecheck` | ตรวจ type อย่างเดียว ไม่สร้างไฟล์ |
-| `npm run db:setup` | สร้างตาราง + seed ข้อมูลตัวอย่าง |
-| `npm run db:reset` | ล้างและสร้างฐานข้อมูลใหม่ |
-| `npm run seed:chat` / `npm run seed:sales` | seed เฉพาะข้อมูลแชท / ยอดขาย |
-| `npm run hash-password` | สร้าง hash รหัสผ่านสำหรับ Admin Dashboard |
-| `npm run daily-summary` / `npm run daily-report` | รันสรุปงาน / รายงานด้วยมือ (ไม่รอ scheduler) |
-| `npm run seed:media` / `npm run media:cleanup` / `npm run media:migrate` | จัดการข้อมูลสื่อ (seed / ลบไฟล์เก่า / ย้ายขึ้น S3) |
-| `npm run storage:check` | ตรวจการเชื่อมต่อ Object Storage ก่อน deploy จริง |
+| `npm run dev` | เปิดเซิร์ฟเวอร์แบบ auto-reload |
+| `npm run build` + `npm start` | build เป็น JavaScript แล้วรันแบบ production |
+| `npm run typecheck` | ตรวจ TypeScript ทั้งโปรเจกต์ |
+| `npm run db:setup` | สร้างตารางและใส่ข้อมูลจำลองทั้งหมด |
+| `npm run db:reset` | ลบทุกตารางแล้วสร้างใหม่ |
+| `npm run seed:sales` | ใส่ข้อมูลยอดขาย 30 วันใหม่ (Capstone) |
+| `npm run seed:chat` | ใส่บทสนทนากลุ่มจำลองใหม่ |
+| `npm run seed:media` | สร้างไฟล์ตัวอย่างในแกลเลอรี (ไม่ต้องมี LINE OA) |
+| `npm run media:cleanup -- --days=90` | ดู/ลบไฟล์ที่เก่ากว่ากำหนดตามนโยบายเก็บข้อมูล |
+| `npm run hash-password -- <รหัส>` | สร้าง bcrypt hash สำหรับ `ADMIN_PASSWORD_HASH` |
+| `npm run daily-summary -- --dry-run` | สรุปแชทประจำวัน (ไม่ส่งออก) |
+| `npm run daily-report -- --dry-run --html` | รายงานผู้บริหาร + เขียนไฟล์ HTML |
 
-## Deploy
+---
 
-มี Render Blueprint (`render.yaml`) พร้อมใช้งาน — ตั้งค่าเริ่มต้นเป็นแผน `free` สำหรับทดสอบ (เปลี่ยนเป็น `starter` เมื่อใช้งานจริง เพราะแผน free จะ sleep เมื่อไม่มี traffic ทำให้ LINE webhook ตอบช้าเกิน 2 วินาที) รายละเอียดเต็มอยู่ที่ `Docs/10-Deployment-Render-Neon.md`
+## ค่าใน .env ที่ควรรู้
 
-## เอกสารเพิ่มเติม
+| ตัวแปร | ความหมาย |
+| --- | --- |
+| `DATABASE_URL` | เช่น `postgres://postgres:postgres@localhost:5432/linechat` |
+| `CHANNEL_ACCESS_TOKEN` | จาก LINE Developers Console > tab Messaging API |
+| `CHANNEL_SECRET` | จาก tab **Basic settings** (คนละค่ากับ token) ใช้ตรวจ signature |
+| `MOCK_LINE` | `true` = ไม่ยิง LINE API จริง (ค่าเริ่มต้น) / `false` = ส่งจริง |
+| `DEFAULT_GROUP_ID` | groupId ปลายทางเริ่มต้นของสคริปต์ตั้งเวลา |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | บัญชีเข้า dashboard |
+| `ADMIN_PASSWORD_HASH` | ถ้าใส่ค่านี้ ระบบจะใช้ hash แทนรหัสผ่านธรรมดา |
+| `ANTHROPIC_API_KEY` | ใส่แล้วการสรุปจะใช้ Claude API ถ้าไม่ใส่จะใช้ rule-based ในเครื่อง |
+| `ANOMALY_AMOUNT_THRESHOLD` | เกณฑ์ยอดต่อบิลที่ถือว่าผิดปกติ (ค่าเริ่มต้น 300000) |
+| `MEDIA_ARCHIVE_ENABLED` | เปิด/ปิดการเก็บภาพและไฟล์จากไลน์กลุ่ม |
+| `MEDIA_STORAGE_DRIVER` | `local` (ดิสก์) หรือ `s3` (object storage) |
+| `MEDIA_LOCAL_DIR` | โฟลเดอร์เก็บไฟล์เมื่อใช้ดิสก์ (ค่าเริ่มต้น `storage/media`) |
+| `MEDIA_MAX_SIZE_MB` | ขนาดไฟล์สูงสุดที่ยอมโหลด (ค่าเริ่มต้น 25 MB) |
 
-ดูขั้นตอนอบรมและสถาปัตยกรรมทั้งหมดได้ในโฟลเดอร์ `Docs/` เช่น `03-Workshop-3-Group-Chat-Recorder.md`, `04-Workshop-4-AI-Summary-and-Dashboard.md`, `09-Architecture-and-Repo-Review.md`
+---
+
+## หน้าจอทั้ง 10 หน้า (ยังมีหน้าล็อกอินอีก 1)
+
+| URL | ทำอะไร |
+| --- | --- |
+| `/` | ภาพรวม: KPI, กราฟรายวัน, ความคึกคักตามชั่วโมง, Top talkers, โควต้า |
+| `/messages` | ประวัติแชท: ค้นหา กรอง แบ่งหน้า export CSV |
+| `/summaries` | สั่ง AI สรุปบทสนทนา เก็บประวัติ ส่งกลับเข้ากลุ่มเป็น Flex |
+| `/tasks` | ติดตามงานที่ AI สกัดมา + เพิ่มเอง + ส่งการ์ดเตือนงานค้าง |
+| `/send` | ส่ง text/Flex เข้ากลุ่มหรือ broadcast พร้อม preview และ dry-run |
+| `/sales` | รายงานผู้บริหาร: ยอดขาย สาขา ช่องทาง สินค้าขายดี รายการผิดปกติ |
+| `/groups` | จัดการกลุ่ม ตั้งชื่อ หมายเหตุ และยืนยันความยินยอม (PDPA) |
+| `/media` | แกลเลอรีภาพและไฟล์ที่เก็บจากไลน์กลุ่ม ค้นหา ดู โหลดกลับ ลบ |
+| `/simulator` | ใส่บทสนทนาจำลอง ใช้ทดสอบเมื่อยังไม่มี LINE OA |
+| `/logs` | ทุกข้อความที่ระบบส่งออก รวม dry-run และ mock |
+
+นอกจากนี้มี `POST /webhook` (ขาเข้าจาก LINE) และ `GET /health` (ไม่ต้องล็อกอิน)
+
+ฝั่ง `POST /webhook` รับ event เหล่านี้: บอทเข้า/ออกกลุ่ม, ข้อความในกลุ่ม (บันทึกลง DB),
+ไฟล์ในกลุ่ม (ดาวน์โหลดเก็บทันที), `unsend` (ลบตามข้อกำหนดของ LINE)
+และ **แชท 1:1 กับ OA + ปุ่ม Rich Menu** ซึ่งตอบกลับตามที่ตั้งไว้ใน
+[`src/services/autoReply.ts`](src/services/autoReply.ts) - แก้ข้อความตอบกลับได้ที่ไฟล์เดียวนั้น
+
+---
+
+## ต่อ LINE จริง (รันในเครื่องตัวเอง)
+
+1. ใส่ `CHANNEL_ACCESS_TOKEN` และ `CHANNEL_SECRET` ในไฟล์ `.env`
+2. ตั้ง `MOCK_LINE=false`
+3. เปิด tunnel: `cloudflared tunnel --url http://localhost:3000`
+   แล้วตั้ง Webhook URL เป็น `https://xxxx.trycloudflare.com/webhook`
+4. เปิด "Use webhook" ใน LINE Developers Console
+5. ใน OA Manager เปิด "Allow bot to join group chats" และปิด Auto-response
+
+---
+
+## Deploy ขึ้น cloud (Render + Neon)
+
+ไฟล์ `render.yaml` ในโฟลเดอร์นี้เป็น Blueprint พร้อมใช้ (ตั้งค่าเริ่มต้นเป็นแผน `free` สำหรับทดสอบ
+เปลี่ยนเป็น `starter` เมื่อใช้งานจริง เพราะแผน free จะ sleep เมื่อไม่มี traffic ทำให้ LINE webhook
+ตอบช้าเกิน 2 วินาที) ดูขั้นตอนละเอียดใน `Docs/10-Deployment-Render-Neon.md`
+
+สรุปสั้น
+
+```bash
+# 1) สร้างฐานข้อมูลที่ neon.com แล้วคัดลอก connection string แบบ pooled
+# 2) เตรียมตารางจากเครื่องตัวเอง (ครั้งเดียว)
+DATABASE_URL="postgres://...-pooler.../linechat?sslmode=require" npm run db:setup
+
+# 3) push ขึ้น GitHub แล้วสร้าง Blueprint ใน Render (แผน Starter)
+# 4) กรอก env ใน Render: DATABASE_URL, CHANNEL_ACCESS_TOKEN, CHANNEL_SECRET,
+#    DEFAULT_GROUP_ID, ADMIN_PASSWORD_HASH, ANTHROPIC_API_KEY
+# 5) ตั้ง Webhook URL ใน LINE เป็น https://<ชื่อ>.onrender.com/webhook
+```
+
+ค่า env ที่ต่างจากตอนรันในเครื่อง
+
+| ตัวแปร | ค่าตอน deploy | เหตุผล |
+| --- | --- | --- |
+| `NODE_ENV` | `production` | เปิด session ใน DB, secure cookie, trust proxy ให้อัตโนมัติ |
+| `MOCK_LINE` | `false` | ส่งเข้า LINE จริง |
+| `ENABLE_SCHEDULER` | `true` | ให้โปรแกรมตั้งเวลารันงานเอง แทน Windows Task Scheduler |
+| `PG_POOL_MAX` | `5` | ฐานข้อมูลฟรีจำกัดจำนวน connection |
+| `SESSION_SECRET` | ข้อความสุ่มยาว | ห้ามใช้ค่าเริ่มต้นบน production |
+
+---
+
+## หมายเหตุ
+
+- โปรเจกต์นี้สำหรับการอบรม ยังไม่พร้อม production (ดู `Docs/09-Architecture-and-Repo-Review.md` ส่วนที่ 3)
+- Tailwind CSS โหลดจาก CDN แบบ Play CDN ซึ่งเหมาะกับ dev/prototype เท่านั้น
+- ข้อมูลทุกอย่างเป็นข้อมูลจำลอง ไม่เกี่ยวข้องกับบุคคลหรือบริษัทจริง
