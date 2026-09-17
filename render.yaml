@@ -24,7 +24,7 @@ services:
     runtime: node
     plan: free
     region: singapore
-    branch: day2
+    branch: main
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /health
